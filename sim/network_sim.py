@@ -363,6 +363,33 @@ class NetworkNode:
         result = compromised_sim.output['compromised']
         self.fuzzy_compromised_value_array.append(result)
         
+        # Call function to determine the category for the compromised result 
+        self.calculate_fuzzy_category(float(result))
+        
+    def calculate_fuzzy_category(self, result):
+        ''' Categories the fuzzy output into one of three states:
+        -1 : healthy
+        0  : questionable
+        1  : compromised
+     
+        --------------
+        Parameters
+        --------------
+            result: float
+                Resulting value from fuzzy compromised logic
+        '''
+        category = 0
+        
+        if result <= 5:
+            category = -1
+        elif (result >5) & (result <6):
+            category = 0
+        else:
+            category = 1
+            
+        self.fuzzy_compromised_cat_array.append(category)
+            
+        
         
 class Simulation:
     '''
