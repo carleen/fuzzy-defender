@@ -76,7 +76,7 @@ class NetworkNode:
         self.is_compromised = 0
         self.flagged_malicious = 0
         self.level = 0
-        self.fuzzy_flagged_malicious = 0
+        self.fuzzy_flagged_malicious = -1
         
         self.packet_rate_array = []
         self.bandwidth_array = []
@@ -84,7 +84,7 @@ class NetworkNode:
         self.flagged_malicious_array = [0]
         self.compromised_array = [0]
         self.fuzzy_compromised_value_array = [0]
-        self.fuzzy_compromised_cat_array = [0]
+        self.fuzzy_compromised_cat_array = [-1]
         self.time_step_array = [-1]
         
         self.parent_nodes = []
@@ -361,16 +361,80 @@ class NetworkNode:
         compromised_sim.compute()
 
         result = compromised_sim.output['compromised']
-        self.fuzzy_compromised_array.append(result)
+        self.fuzzy_compromised_value_array.append(result)
         
         
 class Simulation:
+    '''
+    
+    ****TODO**** 
+    
+    --------------
+    Attributes
+    --------------
+        name: str 
+            Simulation name
+        node_list: list, NetworkNode objects
+            Stores individual nodes contained in network
+            
+    --------------
+    Methods
+    --------------
+        run_simulation(t)
+            Runs simulation for a given number of time steps
+        
+    
+    '''
     
     def __init__(self, name):
         self.name = name
         self.node_list = []
         
+    def establish_nodes(self, num_nodes):
+        ''' Creates a specified number of nodes to be included in network
+        
+        --------------
+        Parameters
+        --------------
+            num_nodes: int
+                Number of nodes to be created for network
+        
+        --------------
+        Returns
+        --------------
+            node_dict: dict
+                Dictionary containing (key, value) pairs, where 
+                pairs are (node_[i], NetworkNode)
+        
+        '''
+        node_dict = {}
+        for i in range(0,num_nodes):
+            node_name = f'node_{i}'
+            node = NetworkNode(node_name)
+            self.node_list.append(node)
+            node_dict[node_name] = i
+        return node_dict
+        
     def run_simulation(self, t):
+        ''' Steps through the simulation for a specified number of time steps.
+        Each step is meant to represent one second of time, and network checks
+        are completed at every iteration. 
+        
+        --------------
+        Parameters
+        --------------
+            t: int
+                Number of timesteps to run the simulation 
+        
+        --------------
+        Returns
+        --------------
+            sim_results: dict
+                Dictionary object containing the results of the simulation, 
+                including the results of compromised node checks at each step,
+                along with metrics recorded at each time step.
+        
+        '''
         for timestep in range(0, t):
             for n in self.node_list:
                 n.get_node_metrics(timestep)
@@ -385,21 +449,30 @@ class Simulation:
                                    'bandwidth': n.bandwidth_array,
                                    'response_time': n.response_time_array,
                                    'flagged_malicious': n.flagged_malicious_array,
-                                   'fuzzy_compromised': n.fuzzy_compromised_array,
+                                   'fuzzy_compromised_value': n.fuzzy_compromised_value_array,
+                                   'fuzzy_compromised_category': n.fuzzy_compromised_cat_array,
                                   'compromised_truth': n.compromised_array}
         return sim_results
 
         
-    def establish_nodes(self, num_nodes):
-        node_dict = {}
-        for i in range(0,num_nodes):
-            node_name = f'node_{i}'
-            node = NetworkNode(node_name)
-            self.node_list.append(node)
-            node_dict[node_name] = i
-        return node_dict
             
     def get_node(self, node_name):
+        ''' Gets a node based off of the provided node name
+        
+        --------------
+        Parameters
+        --------------
+            node_name: str
+                Name of the node of interest
+        
+        --------------
+        Returns
+        --------------
+            node,ind: NetworkNode, int
+                Returns network node and the corresponding index of the node, based on
+                where it falls in the list of nodes contained in the network
+        
+        '''
         node = None
         ind=0
         for n in self.node_list:
@@ -410,15 +483,28 @@ class Simulation:
         return node,ind
             
     def modify_node(self, node, ind):
+        ''' Modifies the node within the network's list. This can change the properties
+        of the node, such as whether or not the node has been attacked. 
+        
+        --------------
+        Parameters
+        --------------
+            node: NetworkNode 
+                Node to be modified
+            ind: int
+                Index of node to be modified, based on network's list of nodes
+        
+        
+        '''
         self.node_list[ind] = node
             
-    def set_network_structure(self, node_name):
-        node = None
-        for n in self.node_list:
-            if n.name==node_name:
-                n.name='test'
                 
     def set_v1_structure(self):
+        '''Sets up the structure of the network. Currently not used, but may later
+        be implimented as a means of increasing the likelihood that a node gets attacked,
+        based on whether or not the node's parent is compromised
+        
+        '''
         self.node_list[0].set_node_level(0)
         self.node_list[0].link_nodes([], [self.node_list[1], self.node_list[2]])
 
