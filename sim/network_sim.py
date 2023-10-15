@@ -9,6 +9,10 @@ class NetworkNode:
     '''
     A class used to represent an individual node within the network.
     
+    ****TODO**** 
+        Implement some way to store mu/stdev values for each of the
+        metric calculations
+    
     --------------
     Attributes
     --------------
@@ -35,6 +39,7 @@ class NetworkNode:
             
     --------------
     Methods
+    --------------
         get_packet_rate(mu, stdev, min_munivorm, max_uniform)
         get_bandwidth(mu, stdev, min_munivorm, max_uniform)
         get_response_time(mu, stdev, min_munivorm, max_uniform)
@@ -91,7 +96,32 @@ class NetworkNode:
 
         
     def get_packet_rate(self, mu=0.91, stdev=0.01, min_uniform=0.05, max_uniform=0.1):
-        '''
+        ''' Gets the current packet rate of the node. Packet rate is determined
+        based on whether or not the node is compromised
+        
+        *****TODO*****
+            Store mu, stdev values for metric
+        
+        --------------
+        Parameters
+        --------------
+            - mu: float
+                Sets the mean value for the normal distribution for the packet
+                rate of the node
+            - stdev: float
+                Sets the standard deviation for the normal distribution for
+                packet rate of the node
+            - min_uniform: float
+                Lower limit on random amount packet rate is degraded if 
+                the node is compromised
+            - max_uniform: float
+                Upper limit on random amount packet rate is degraded if 
+                the node is compromised
+        --------------
+        Returns
+        --------------
+            - packet_rate: float
+                Packet rate of node at time in simulation 
         
         '''
         # Under normal operation, 
@@ -103,6 +133,34 @@ class NetworkNode:
         return packet_rate
     
     def get_bandwidth(self, mu=30, stdev=3, min_uniform=2, max_uniform=7):
+        ''' Gets the current bandwidth of the node. Bandwidthis determined
+        based on whether or not the node is compromised
+        
+        *****TODO*****
+            Store mu, stdev values for metric
+        
+        --------------
+        Parameters
+        --------------
+            - mu: float
+                Sets the mean value for the normal distribution for the 
+                bandwidth of the node
+            - stdev: float
+                Sets the standard deviation for the normal distribution for
+                banwidth of the node
+            - min_uniform: float
+                Lower limit on random amount bandwidth is degraded if 
+                the node is compromised
+            - max_uniform: float
+                Upper limit on random amount bandwidth is degraded if 
+                the node is compromised
+        --------------
+        Returns
+        --------------
+            - bandwidth: float
+                Bandwidth of node at time in simulation 
+        
+        '''
         if self.is_compromised == 0:
             bandwidth = np.random.normal(mu, stdev)
         else:
@@ -111,6 +169,34 @@ class NetworkNode:
         return bandwidth
     
     def get_response_time(self, mu=130, stdev=20, min_uniform=100, max_uniform=300):
+        ''' Gets the current response timeof the node. Response time isdetermined
+        based on whether or not the node is compromised
+        
+        *****TODO*****
+            Store mu, stdev values for metric
+        
+        --------------
+        Parameters
+        --------------
+            - mu: float
+                Sets the mean value for the normal distribution for the 
+                response time of the node
+            - stdev: float
+                Sets the standard deviation for the normal distribution for
+                response time of the node
+            - min_uniform: float
+                Lower limit on random amount response time is degraded if 
+                the node is compromised
+            - max_uniform: float
+                Upper limit on random amount response time is degraded if 
+                the node is compromised
+        --------------
+        Returns
+        --------------
+            - bandwidth: float
+                Bandwidth of node at time in simulation 
+        
+        '''
         if self.is_compromised == 0:
             response_time = np.random.normal(mu, stdev)
         else:
@@ -119,27 +205,103 @@ class NetworkNode:
         return response_time
         
     def link_nodes(self, parent_node_list, child_node_list):
+        ''' Establishes nodes relationships to other nodes in network
+        
+        --------------
+        Parameters
+        --------------
+            - parent_node_list: list, NetworkNode objects
+                Parents of the node
+            - child_node_list: list, NetworkNode objects
+                Children of the node
+        
+        '''
         for node in parent_node_list:
             self.parent_nodes.append(node)
         for node in child_node_list:
             self.child_nodes.append(node)
             
     def get_node_metrics(self, timestep):
+        ''' Calls each of the functions that determine the node's current
+        performance metrics:
+            - cur_packet_rate
+            - cur_bandwidth
+            - cur_response_time
+        
+        --------------
+        Parameters
+        --------------
+            - timestep: int
+                Current timestep of the simulation
+                
+        '''
         self.time_step_array.append(timestep)
         self.cur_packet_rate = self.get_packet_rate()
         self.cur_bandwidth = self.get_bandwidth()
         self.cur_response_time = self.get_response_time()
 
     def set_node_level(self, level):
+        ''' Sets the "level" of the node, which represents where the node
+        falls in the overall network geneaology
+        
+        --------------
+        Parameters
+        --------------
+        - level: int
+            Tree level of node in network architecture
+        
+        '''
         self.level=level
         
     def get_node_level(self):
+        ''' Getter function for the node level
+        
+        --------------
+        Returns
+        --------------
+        level: int
+            Level of node
+        
+        '''
         return self.level
     
     def add_timestep(self, t):
+        ''' Adds timestep to array for node
+        
+        --------------
+        Parameters
+        --------------
+        t: int 
+            Timestep of simulation
+        
+        '''
         self.time_step_array.append(t)
-    
+        
+    def truth_compromise_check(self):
+        ''' Used to store values as to whether or not the
+        node is truly compromised. 
+        
+        '''
+        self.compromised_array.append(self.is_compromised)
+        
     def basic_compromise_check(self):
+        ''' Basic compromise check of whether or not the node is
+        compromised. 
+        
+        This check is based on a rough threshold for what is considered
+        to be normal, non-attacked behavior of the network node. At each
+        step of the simulation, the node is assumed to be non-malicious
+        before performing the check. If this logic check detects unusual 
+        behavior, it flags the node as malicious.
+        
+        
+        --------------
+        Parameters
+        --------------
+        t: int 
+            Timestep of simulation
+        
+        '''
         self.flagged_malicious = 0
         if (self.cur_response_time > 130) & (self.cur_bandwidth < 32):
             if self.cur_packet_rate < 0.905:
@@ -149,20 +311,19 @@ class NetworkNode:
         if (self.cur_response_time > 130) & (self.cur_packet_rate < 0.91):
             if self.cur_bandwidth < 27:
                 self.flagged_malicious = 1
-
-
-        '''
-        # Reset the node to non-malicious if the metrics look good 
-        if (self.cur_response_time < 130) & (self.cur_packet_rate > 0.91) & (self.cur_bandwidth > 30):
-            self.flagged_malicious = 0
-        '''
-
+                
         self.flagged_malicious_array.append(self.flagged_malicious)
-        self.compromised_array.append(self.is_compromised)
         
     def fuzzy_compromise_check(self):
         '''
-        Establish variables for Compromised Controller
+        Sets up fuzzy logic system. Implements antecedents and consequent,
+        establishes universe, calculates fuzzy logic output for 
+        whether or note node is compromised. 
+        
+       *****TODO*****
+            - remove hard-coded values for Antecedents, and base values
+            off of the mu, stdev for each of the metrics
+            - clean this up, potentially move this to another location
         '''
 
         response_time = ctrl.Antecedent(np.arange(0,600,10), 'response_time')
@@ -213,6 +374,7 @@ class Simulation:
         for timestep in range(0, t):
             for n in self.node_list:
                 n.get_node_metrics(timestep)
+                n.truth_compromise_check()
                 n.basic_compromise_check()
                 n.fuzzy_compromise_check()
         
