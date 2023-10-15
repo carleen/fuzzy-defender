@@ -6,20 +6,80 @@ import plotly.express as px
 import pandas as pd
 
 class NetworkNode:
+    '''
+    A class used to represent an individual node within the network.
+    
+    --------------
+    Attributes
+    --------------
+        name: str 
+            network node name
+        flagged_malicious: int (0,1) 
+            indicates basic algorithm's interpretation of node status
+        level: int 
+            represents where node falls in network hierarchy
+
+        [*]_array: list
+            stores values at each time step of the simulation
+            - comproised_array: used for truthing
+            - bandwidth, packet_rate, response_time: the metrics that
+              underly the "wellness" calculations of the nodes
+
+        parent_nodes: list 
+            node's ancestor nodes
+        child_nodes 
+            node's children nodes
+
+        cur_[*]: list 
+            tracks the current values for node metrics
+            
+    --------------
+    Methods
+        get_packet_rate(mu, stdev, min_munivorm, max_uniform)
+        get_bandwidth(mu, stdev, min_munivorm, max_uniform)
+        get_response_time(mu, stdev, min_munivorm, max_uniform)
+            Determines the values of the network metric parameters
+            at the current simulation time step
+        
+        link_nodes(parent_node_list, child_node_list)
+            Establishes parents and children of node
+            
+        get_node_metrics(timesteps)
+            Calls methods to set the metrics for the node based on
+            the health of the node
+        
+        set_node_level(level)
+            Setter function
+        get_node_level()
+            Getter function
+            
+        add_timestep(t)
+            Appends timestep value to array for node
+        
+        basic_compromise_check()
+            Uses simple logic with cutoffs for node metrics to determine
+            if node is compromised
+        fuzzy_compromise_check()
+            Uses fuzzy logic to calculate the likelihood that the
+            node is compromsied
+    --------------
+    
+    '''
     
     def __init__(self, name):
         self.name = name
         self.is_compromised = 0
         self.flagged_malicious = 0
         self.level = 0
+        self.fuzzy_flagged_malicious = 0
         
         self.packet_rate_array = []
         self.bandwidth_array = []
         self.response_time_array = []
         self.flagged_malicious_array = [0]
         self.compromised_array = [0]
-        self.fuzzy_compromised_array = [0]
-        
+        self.fuzzy_compromised_value_array = [0]
+        self.fuzzy_compromised_cat_array = [0]
         self.time_step_array = [-1]
         
         self.parent_nodes = []
@@ -31,6 +91,9 @@ class NetworkNode:
 
         
     def get_packet_rate(self, mu=0.91, stdev=0.01, min_uniform=0.05, max_uniform=0.1):
+        '''
+        
+        '''
         # Under normal operation, 
         if self.is_compromised ==0:
             packet_rate = np.random.normal(mu, stdev)
