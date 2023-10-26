@@ -5,6 +5,19 @@ import plotly.express as px
 
 import pandas as pd
 
+metric_values = {'packet_rate_mu': 0.91, 
+                'packet_rate_std': 0.01,
+                'packet_rate_min': 0.05,
+                'packet_rate_max': 0.1,
+                'bandwidth_mu': 30,
+                'bandwidth_std': 3,
+                'bandwidth_min': 2,
+                'bandwidth_max': 7,
+                'response_time_mu': 130,
+                'response_time_std': 20,
+                'response_time_min': 100,
+                'response_time_max': 300}
+
 class NetworkNode:
     '''
     A class used to represent an individual node within the network.
@@ -93,14 +106,14 @@ class NetworkNode:
         self.cur_packet_rate = self.get_packet_rate()
         self.cur_bandwidth = self.get_bandwidth()
         self.cur_response_time = self.get_response_time()
+        
+    def initialize_metric_values(self):
+        pass
 
         
     def get_packet_rate(self, mu=0.91, stdev=0.01, min_uniform=0.05, max_uniform=0.1):
         ''' Gets the current packet rate of the node. Packet rate is determined
         based on whether or not the node is compromised
-        
-        *****TODO*****
-            Store mu, stdev values for metric
         
         --------------
         Parameters
