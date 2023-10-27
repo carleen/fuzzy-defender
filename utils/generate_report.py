@@ -40,16 +40,16 @@ class Report:
                               width=600, height=400, 
                               range_y=[-1.1, 1.1], 
                               range_x=[-0.5,100.5],
-                      title='{n}',
+                      title=f'{n}',
                      labels={'fuzzy_compromised':'Compromised Rating',
                             'time': 'Simulation Time (s)'})
             try:
-                fig1.to_image(f'{nodename}_{y_var}.png')
+                fig1.to_image(os.path.join(rpath, f'{nodename}_{y_var}.png'))
             except ValueError:
                 print('')
         
     
-    def generate_report(self):
+    def generate_report(self, results_dir):
         
         results = self.results
         
@@ -58,8 +58,8 @@ class Report:
         dt_str = dt_str + f'_{self.name}'
         
         # Make directory
-        os.mkdir(f'../results/{dt_str}')
-        rpath = os.path.join('../results', dt_str)
+        os.mkdir(f'{results_dir}/{dt_str}')
+        rpath = os.path.join(results_dir, dt_str)
         
         
         # Write the csv results to output

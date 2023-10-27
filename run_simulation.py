@@ -4,26 +4,22 @@ sys.path.append('./utils')
 import pandas as pd
 import plotly.express as px
 
-from network_sim import Simulation, NetworkNode
+from network_sim import Simulation 
+from network_node import NetworkNode
+from attacker import Attacker
 from generate_report import Report
 
 if __name__=='__main__':
-    # Run the simulation without a hacked node
-    sim = Simulation('sim1')
-    node_dict = sim.establish_nodes(9)
-    sim.set_v1_structure()
-    uncompromised_results = sim.run_simulation(t=100)
     
-    # Run the simulation with node 0 hacked
-    sim = Simulation('sim2')
-    node_dict = sim.establish_nodes(9)
-    sim.set_v1_structure()
-
-    node0, ind = sim.get_node('node_0')
-    node0.is_compromised = 1
-    sim.modify_node(node0, ind)
-
-    compromised_results = sim.run_simulation(t=100)
+    # Run the simulation with onboard attacker
+    sim2 = Simulation('sim2')
+    sim2.establish_nodes(9)
+    sim2.set_v1_structure()
+    attacker = Attacker('attacker1', 0)
+    sim2.add_attacker(attacker)
+    compromised_results = sim2.run_simulation(t=100)
     
+    results_dir = '/Users/carleen/Documents/grad_school/fuzzy-defender/results'
     report_c = Report('compromised', compromised_results)
-    report_u = Report('uncompromised', uncompromised_results)
+    report_c.generate_report(results_dir)
+    
