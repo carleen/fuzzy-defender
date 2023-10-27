@@ -4,5 +4,5 @@ __pycache__
 *.pyc
 ./*/.ipynb_checkpoints
 ./sim/.ipynb_checkpoints
-./notebooks
-./results
+./notebooks*
+./results*
