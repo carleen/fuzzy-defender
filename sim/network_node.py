@@ -109,7 +109,7 @@ class NetworkNode:
         
         self.node_dict = {}
         
-        self.security_threshold= 0.98
+        self.security_threshold= 0.99
         
     def initialize_metric_values(self):
         pass
