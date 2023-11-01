@@ -89,7 +89,7 @@ class NetworkNode:
         self.is_compromised = 0
         self.flagged_malicious = 0
         self.level = 0
-        self.fuzzy_flagged_malicious = -1
+        self.fuzzy_flagged_malicious = 0
         
         self.packet_rate_array = []
         self.bandwidth_array = []
@@ -97,7 +97,7 @@ class NetworkNode:
         self.flagged_malicious_array = [0]
         self.compromised_array = [0]
         self.fuzzy_compromised_value_array = [0]
-        self.fuzzy_compromised_cat_array = [-1]
+        self.fuzzy_compromised_cat_array = [0]
         self.time_step_array = [-1]
         
         self.parent_nodes = []
@@ -109,7 +109,10 @@ class NetworkNode:
         
         self.node_dict = {}
         
-        self.security_threshold= 0.99
+        self.security_threshold= 0.97
+
+    def get_node_name(self):
+        return self.name
         
     def initialize_metric_values(self):
         pass
@@ -345,6 +348,8 @@ class NetworkNode:
             off of the mu, stdev for each of the metrics
             - clean this up, potentially move this to another location
         '''
+        prev_flag = self.fuzzy_flagged_malicious
+        
 
         response_time = ctrl.Antecedent(np.arange(0,600,10), 'response_time')
         packet_rate = ctrl.Antecedent(np.arange(0.83,0.93,0.005), 'packet_rate')
@@ -384,7 +389,8 @@ class NetworkNode:
         self.fuzzy_compromised_value_array.append(result)
         
         # Call function to determine the category for the compromised result 
-        self.calculate_fuzzy_category(float(result))
+        # self.calculate_fuzzy_category(float(result))
+        self.calculate_fuzzy_category(result)
         
     def calculate_fuzzy_category(self, result):
         ''' Categories the fuzzy output into one of three states:
@@ -399,13 +405,17 @@ class NetworkNode:
                 Resulting value from fuzzy compromised logic
         '''
         category = 0
+        prev_flag = self.fuzzy_flagged_malicious
         
         if result <= 5:
-            category = -1
-        elif (result >5) & (result <6):
+            category = 0
+        elif (result >5) & (result <6) & (prev_flag == 1):
+            category = 1
+        elif (result >5) & (result <6) & (prev_flag == 0):
             category = 0
         else:
             category = 1
             
+        self.fuzzy_flagged_malicious = category
         self.fuzzy_compromised_cat_array.append(category)
             

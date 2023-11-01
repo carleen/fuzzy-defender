@@ -54,7 +54,7 @@ class Report:
         results = self.results
         
         # Get date and time
-        dt_str = datetime.now().strftime("%Y-%m-%d_%H%m")
+        dt_str = datetime.now().strftime("%Y-%m-%d_%H%M")
         dt_str = dt_str + f'_{self.name}'
         
         # Make directory

@@ -1,0 +1,13 @@
+Variable that sets the threshold required for the node to 
+be attacked:
+    self.security_threshold
+
+
+- if the node is compromised, then initialize attack on child nodes
+
+attacker = Attacker(f'attacker_{ind}
+
+- node attributes:
+    - self.name (n.get_node_name)
+    - self.parent_nodes (list of parent nodes)
+    - self.child_nodes (list of child nodes)

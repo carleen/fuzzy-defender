@@ -2,7 +2,9 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import plotly.express as px
+
 from network_node import NetworkNode
+from attacker import Attacker
 
 import pandas as pd
 
@@ -90,13 +92,29 @@ class Simulation:
                 success = a.attempt_attack(threshold)
                 
                 if success:
+                    prev_status = self.node_list[target_node_ind].is_compromised
                     self.node_list[target_node_ind].is_compromised = 1
+                    n = self.node_list[target_node_ind]
+                    if len(n.child_nodes) > 0 and prev_status==0:
+                        for c in n.child_nodes:
+                            # Get the index of the child node
+                            c_node_name = c.get_node_name() 
+                            c_ind = int(c_node_name.strip('node_'))
+
+                            # Add attacker to attacker list
+                            print(f'{n.name} is compromised, adding attacker to {c_node_name}') 
+                            print(f'Number of attackers: {len(self.attacker_list)}')
+                            attacker = Attacker(f'attacker_{c_ind}', c_ind)
+                            self.add_attacker(attacker)
+                    
+                    
                 
             for n in self.node_list:
                 n.get_node_metrics(timestep)
                 n.truth_compromise_check()
                 n.basic_compromise_check()
                 n.fuzzy_compromise_check()
+
         
         sim_results = {}
         for n in self.node_list:

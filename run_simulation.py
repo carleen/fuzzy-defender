@@ -15,7 +15,7 @@ if __name__=='__main__':
     sim2 = Simulation('sim2')
     sim2.establish_nodes(9)
     sim2.set_v1_structure()
-    attacker = Attacker('attacker1', 0)
+    attacker = Attacker('attacker_0', 0)
     sim2.add_attacker(attacker)
     compromised_results = sim2.run_simulation(t=200)
     
